@@ -1,103 +1,132 @@
-🤖 Smart Digital Twin — Robotic Arm Predictive Maintenance
+# Typescript Type Definitions for WebGPU
 
-An AI-powered predictive maintenance system for robotic arms, using Reduced-Order Modeling (ROM) and Machine Learning, designed to monitor, analyze, and predict equipment health in real time.
-🌟 Key Features
+This package defines Typescript types (`.d.ts`) for the upcoming [WebGPU standard](https://github.com/gpuweb/gpuweb/wiki/Implementation-Status).
 
-    🦾 3-DOF Robotic Arm Visualization — Real-time digital twin simulation
+Use this package to augment the ambient [`"dom"`](https://www.typescriptlang.org/docs/handbook/compiler-options.html#compiler-options) type definitions with the new definitions for WebGPU.
 
-    🧠 AI-Powered Predictive Maintenance — Detect, predict, and prevent faults
+## API style docs
 
-    ⚙️ Fault Simulation & Testing — Validate performance under stress
+This repo also generates typedoc docs here: https://gpuweb.github.io/types
 
-    📡 Real-Time Sensor Monitoring — Visualize temperature, vibration & voltage data
+## What are declaration files?
 
-    💗 Health Score Tracking — Continuous degradation analysis
+See the [TypeScript handbook](http://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html).
 
-    ⏳ Remaining Useful Life (RUL) — Intelligent lifespan estimation
 
-    📈 Interactive Charts & Analytics — Insightful, user-friendly dashboards
+## How can I use them?
 
-    📤 Data Export Functionality — Share results in multiple formats
+### Install
 
-🏗️ System Architecture
+- npm: `npm install --save-dev @webgpu/types`
+- yarn: `yarn add --dev @webgpu/types`
+- pnpm: `pnpm add -D @webgpu/types`
 
-text
-┌──────────────────┐        ┌────────────────────┐         ┌───────────────────┐
-│     Frontend     │  <──>  │      Backend       │  <──>   │     ML Model      │
-│  (React.js)      │        │  (Node.js/Express) │         │  (Python / ML)    │
-└──────────────────┘        └────────────────────┘         └───────────────────┘
-         ▲                           ▲                               ▲
-         │                           │                               │
-         ▼                           ▼                               ▼
-                    ┌────────────────────────────────────────────┐
-                    │           WebSocket Layer (Real-Time)       │
-                    └────────────────────────────────────────────┘
+If you are on TypeScript < 5.1, you will also need to install `@types/dom-webcodecs`
+as a sibling dependency. The version you need depends on the TypeScript version;
+see the [tests](tests/) for examples.
 
-    Frontend: React.js dashboard for visualization and analytics
+### Configure
 
-    Backend: Node.js + Express API for data handling and coordination
+Since this package is outside DefinitelyTyped, the dependency won't be picked up automatically.
+There are several ways to add a additional TypeScript type definition dependencies to your TypeScript project:
 
-    AI Engine: Python ML model for predictive analysis and RUL estimation
+#### TypeScript `tsc` and `tsc`-based bundlers
 
-    WebSocket: Enables real-time communication between all components
+In `tsconfig.json`:
 
-⚙️ Setup & Installation
-Prerequisites
+```js
+{
+  // ...
+  "compilerOptions": {
+    // ...
+    "types": ["@webgpu/types"]
+  }
+}
+```
 
-    Node.js v18
+Or you can use `typeRoots`:
 
-    Python 3.8+
+```js
+{
+  // ...
+  "compilerOptions": {
+    // ...
+    "typeRoots": ["./node_modules/@webgpu/types", "./node_modules/@types"]
+  }
+}
+```
 
-    npm or yarn
+#### Inline in TypeScript
 
-1. Clone the Repository
+This may work better if your toolchain doesn't read `tsconfig.json`.
 
-bash
-git clone https://github.com/yourusername/robotic-arm-digital-twin.git
-cd robotic-arm-digital-twin
+```ts
+/// <reference types="@webgpu/types" />
+```
 
-2. Install Frontend Dependencies
+#### Webpack
 
-bash
-cd frontend
-npm install
+If you use Webpack and the options above aren't sufficient (this has not been verified),
+you may need the following in `webpack.config.js`:
 
-3. Install Backend Dependencies
+```js
+"types": ["@webgpu/types"]
+```
 
-bash
-cd ../backend
-npm install
+#### Others?
 
-4. Install ML Dependencies
+Please contribute a PR to add instructions for other setups or improve existing instructions. :)
 
-bash
-cd ../ml-model
-pip install -r requirements.txt
 
-🚀 Run the Application
-Start Backend Server
+## How to update these types
 
-bash
-cd backend
-npm run dev
+- Make sure the submodule is checked out: `git submodule update --init`
+- Pull `gpuweb` changes: `pushd gpuweb && git checkout main && git pull && popd`
+- Install dependencies: `npm ci`
+- Generate `generated/index.d.ts`: `npm run generate`
+- Open a diff between `generated/index.d.ts` and `dist/index.d.ts`.
+    The generated file is tracked by Git so you can see what has changed.
+    Update the latter according to changes from the former.
+    Note the `generated/` and `dist/` files are not the same.
+    See below for intentional differences.
+- Format the result: `npm run format`
 
-Start Frontend
+### Intentional differences between generator output and final result
 
-bash
-cd frontend
-npm start
+Most or all of these should be fixed in the generator over time.
 
-Access Application
+- `any` changed to `object` for WebIDL `object`.
 
-Open your browser at 👉 http://localhost:3000
-🧠 AI Model Capabilities
+The following differences are TODO: should be changed in the final result.
 
-    🔥 Temperature anomaly detection
+- Deprecated items should be removed.
+- TODO items should be fixed (e.g. make new additions no longer optional).
+- Addition of Compatibility Mode items like `textureBindingViewDimension`.
 
-    ⚡ Voltage drop prediction
+The following differences will remain.
 
-    🌀 Vibration pattern recognition
+- `onuncapturederror` strongly typed.
+- `addEventListener('uncapturederror')` type support.
+- `getContext` definitions.
+- `GPUExtent3DStrict` and `GPUOrigin2DStrict`.
 
-    ⚙️ Motor failure forecasting
+### Publish a new npm package version
 
-    🧾 Remaining Useful Life (RUL) estimation
+(only for people who have npm publish access)
+
+* One line cmd to copy-n-paste (for ssh git user, and you'd better know what you are doing, if it failed at certain steps, you might need to clean up git tags before trying again)
+  - `git checkout main && git pull git@github.com:gpuweb/types.git main && git submodule update --init && npm version patch && git push git@github.com:gpuweb/types.git main --tags && npm publish`
+* Separate steps (better for publishing for the first time)
+  * Make sure you are in the upstream repo, not your forked one. And make sure you are synced to latest commit intended for publish
+    - `git checkout main`
+    - `git pull https://github.com/gpuweb/types.git main`
+      - (If you are using HTTPS regularly. You can use remote names like `origin`, just make sure you are referring to the right repo)
+    - `git submodule update --init`
+  * Create the version tag and commit, and push
+    - `npm version patch`
+    - `git push https://github.com/gpuweb/types.git main --tags`
+  * publish the package
+    - `npm publish --otp=<code>`
+      - Replace `<code>` with the one-time password from your authenticator, since two-factors authentication is required to publish.
+      - If you are doing for the first time, you will do `npm adduser` first and it will guide you through adding the npm account.
+
